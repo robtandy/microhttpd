@@ -7,7 +7,7 @@ import asyncio
 import time
 from asyncio import coroutine, Task, start_server
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('microhttp')
 
 class HTTPException(Exception):
     def __init__(self, status_code, msg):
@@ -85,7 +85,8 @@ class Request(object):
         dur = time.time() - self.start_time
         Request.TOTAL_REQ += 1
         Request.TOTAL_TIME += dur
-        log.debug('served request for %s in %s', self.full_path, dur)
+        log.info('%s %s %s %sms', self.status_code, self.method, 
+                self.full_path, round(dur*1000, 2))
         log.debug('avg req time %0.6f for %d requests',
             Request.TOTAL_TIME / Request.TOTAL_REQ, Request.TOTAL_REQ)
 
@@ -99,6 +100,7 @@ class Response(object):
         self.is_sent = False
         self.is_head_request = False
         self.headers_sent = False
+        self.status_code = -1
     
     @coroutine
     def send_headers(self, length=0, status=200, headers={}):
@@ -111,6 +113,7 @@ class Response(object):
         #yield from self.writer.drain()
         log.debug('headers written')
         self.headers_sent = True
+        self.request.status_code = status
     
     @coroutine
     def send(self, d):
@@ -216,7 +219,7 @@ class HTTPServer(object):
             
             if meth.lower() == method.lower():
                 cb = cb_wrapper(callback, cb_kwargs)
-            elif meth.lower() == 'head' and method.lower() == 'get':
+            elif meth.lower() == 'head':
                 cb = cb_wrapper(callback, cb_kwargs, is_head=True)
             if cb:
                 break # we matched one
@@ -231,7 +234,7 @@ class HTTPServer(object):
             log.debug('client disconnect')
             writer.close()
             return
-        log.debug('NEW REQUEST %s', 'reused' if reused else '')
+        log.debug('NEW REQUEST %s', '(reused connection)' if reused else '')
         response = Response(writer, request, self)
 
         cb = self.select_callback(request.path, request.method)
