@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 __author__ = 'Rob Tandy'
 __license__ = 'MIT'
-__version__ = '0.5.0'
+__version__ = '0.5.1'
 
 import urllib.parse
 import re
@@ -12,7 +12,7 @@ import asyncio
 import time
 from asyncio import coroutine, Task, start_server
 
-log = logging.getLogger('microhttp')
+log = logging.getLogger('microhttpd')
 
 class HTTPException(Exception):
     def __init__(self, status_code, msg):
