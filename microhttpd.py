@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+__author__ = 'Rob Tandy'
+__license__ = 'MIT'
+__version__ = '0.5.0'
+
 import urllib.parse
 import re
 import os
